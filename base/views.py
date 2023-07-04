@@ -9,12 +9,14 @@ from .forms import RoomForm, UserForm, MyUserCreationForm
 
 # Create your views here.
 
-rooms = [
-    {'id': 1, 'name': 'Lets learn python!'},
-    {'id': 2, 'name': 'Design with me'},
-    {'id': 3, 'name': 'Frontend developers'},
-]
+# rooms = [
+#     {'id': 1, 'name': 'Lets learn python!'},
+#     {'id': 2, 'name': 'Design with me'},
+#     {'id': 3, 'name': 'Frontend developers'},
+# ]
 
+
+import re
 
 def loginPage(request):
     page = 'login'
@@ -22,24 +24,34 @@ def loginPage(request):
         return redirect('home')
 
     if request.method == 'POST':
-        email = request.POST.get('email').lower()
+        email = None
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
-        try:
-            user = User.objects.get(email=email)
-        except:
-            messages.error(request, 'User does not exist')
+        # Check if the value entered in the username input field is a valid email address
+        if username and re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', username):
+            email = username.lower()
+            username = None
 
-        user = authenticate(request, email=email, password=password)
+        print(f'email: {email}')
+        print(f'username: {username}')
+
+        user = User.objects.filter(Q(email=email) | Q(username=username)).first()
 
         if user is not None:
-            login(request, user)
-            return redirect('home')
+            user = authenticate(request, email=email, password=password)
+
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.error(request, 'Username OR password does not exit')
         else:
-            messages.error(request, 'Username OR password does not exit')
+            messages.error(request, 'User does not exist')
 
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
+
 
 
 def logoutUser(request):
@@ -59,6 +71,7 @@ def registerPage(request):
             login(request, user)
             return redirect('home')
         else:
+            
             messages.error(request, 'An error occurred during registration')
 
     return render(request, 'base/login_register.html', {'form': form})
