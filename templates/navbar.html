@@ -3,12 +3,13 @@
     <div class="container">
         <a href="{% url 'home' %}" class="header__logo">
             <img src="{% static 'images/logo.svg' %}" />
+            
             <h1>StudyBee</h1>
         </a>
         <form class="header__search" method="GET" action="{% url 'home' %}">
             <label>
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-                    <title>search</title>
+                    <title>search </title>
                     <path
                         d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
                     </path>
@@ -16,6 +17,11 @@
                 <input name="q" placeholder="Search for posts" />
             </label>
         </form>
+        <div> 
+            <button id="toggleButton">
+               change to light mode ☀️
+            </button>
+        </div>
         <nav class="header__menu">
 
 
@@ -65,11 +71,74 @@
                     </svg>
                     Logout</a>
             </div>
+            
         </nav>
     </div>
 </header>
 
 
+<script type="text/javascript">
+    const root = document.documentElement;
+    const toggleButton = document.querySelector("#toggleButton");
+    
+    // Check if a mode was previously saved in localStorage
+    if (localStorage.getItem("mode") === "light") {
+      toggleColors();
+    }
+    
+    toggleButton.addEventListener("click", () => {
+      toggleColors();
+      // Save the current mode in localStorage
+      if (localStorage.getItem("mode") === "light") {
+          toggleButton.textContent = "Change to light mode ☀️";
+          localStorage.setItem("mode", "dark");
+        } else {
+            toggleButton.textContent = "Change to dark mode 🌑";
+            localStorage.setItem("mode", "light");
+      }
+    });
+    
+    function toggleColors() {
+      root.style.setProperty("--color-main", invertColor(getComputedStyle(root).getPropertyValue("--color-main")));
+      root.style.setProperty("--color-main-light", invertColor(getComputedStyle(root).getPropertyValue("--color-main-light")));
+      root.style.setProperty("--color-dark", invertColor(getComputedStyle(root).getPropertyValue("--color-dark")));
+      root.style.setProperty("--color-dark-medium", invertColor(getComputedStyle(root).getPropertyValue("--color-dark-medium")));
+      root.style.setProperty("--color-dark-light", invertColor(getComputedStyle(root).getPropertyValue("--color-dark-light")));
+      root.style.setProperty("--color-light", invertColor(getComputedStyle(root).getPropertyValue("--color-light")));
+      root.style.setProperty("--color-gray", invertColor(getComputedStyle(root).getPropertyValue("--color-gray")));
+      root.style.setProperty("--color-light-gray", invertColor(getComputedStyle(root).getPropertyValue("--color-light-gray")));
+      root.style.setProperty("--color-bg", invertColor(getComputedStyle(root).getPropertyValue("--color-bg")));
+      root.style.setProperty("--color-success", invertColor(getComputedStyle(root).getPropertyValue("--color-success")));
+      root.style.setProperty("--color-error", invertColor(getComputedStyle(root).getPropertyValue("--color-error")));
+    }
+    
+    function invertColor(hex) {
+        if (hex.indexOf('#') === 0) {
+            hex = hex.slice(1);
+        }
+        // convert 3-digit hex to 6-digits.
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        if (hex.length !== 6) {
+            throw new Error('Invalid HEX color.');
+        }
+        // invert color components
+        var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+            g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+            b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+        // pad each with zeros and return
+        return '#' + padZero(r) + padZero(g) + padZero(b);
+    }
+    
+    function padZero(str, len) {
+        len = len || 2;
+        var zeros = new Array(len).join('0');
+        return (zeros + str).slice(-len);
+    }
+    
+
+</script>
 
 <!-- {% if request.user.is_authenticated %}
 <p>Hello {{request.user}}</p>

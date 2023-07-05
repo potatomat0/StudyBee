@@ -9,12 +9,6 @@ from .forms import RoomForm, UserForm, MyUserCreationForm
 
 # Create your views here.
 
-# rooms = [
-#     {'id': 1, 'name': 'Lets learn python!'},
-#     {'id': 2, 'name': 'Design with me'},
-#     {'id': 3, 'name': 'Frontend developers'},
-# ]
-
 
 import re
 
@@ -24,33 +18,28 @@ def loginPage(request):
         return redirect('home')
 
     if request.method == 'POST':
-        email = None
-        username = request.POST.get('username')
+        email = request.POST.get('username')
         password = request.POST.get('password')
 
         # Check if the value entered in the username input field is a valid email address
-        if username and re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', username):
-            email = username.lower()
-            username = None
+        if not re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            user = User.objects.filter(username=email).first()
+            if user:
+                email = user.email
 
         print(f'email: {email}')
-        print(f'username: {username}')
 
-        user = User.objects.filter(Q(email=email) | Q(username=username)).first()
+        user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            user = authenticate(request, email=email, password=password)
-
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.error(request, 'Username OR password does not exit')
+            login(request, user)
+            return redirect('home')
         else:
-            messages.error(request, 'User does not exist')
+            messages.error(request, 'Username OR password does not exit')
 
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
+
 
 
 
